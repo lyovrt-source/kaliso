@@ -70,7 +70,7 @@
             position: relative;
             width: 360px;
             height: 360px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -135,6 +135,34 @@
             border: 2px solid #fff;
         }
 
+        /* Նվերների բաժինը անիվից հետո */
+        .gift-prices {
+            background: rgba(20, 20, 30, 0.8);
+            width: 100%;
+            max-width: 380px;
+            border: 2px solid #00f2ea;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 15px rgba(0, 242, 234, 0.3);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            box-sizing: border-box;
+        }
+
+        .gift-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            border-left: 3px solid #00f2ea;
+            font-size: 13px;
+        }
+        .gift-name { color: #00f2ea; font-weight: bold; cursor: pointer; }
+        .gift-val { color: #f1c40f; cursor: pointer; }
+
         .menu-container {
             background: rgba(20, 20, 30, 0.6);
             padding: 20px;
@@ -181,6 +209,9 @@
         </div>
     </div>
 
+    <div class="gift-prices" id="gift-list">
+        </div>
+
     <div class="menu-container">
         <div class="input-group">
             <input type="text" id="new-item" placeholder="Անուն կամ 'Անուն 5.'">
@@ -203,11 +234,44 @@
         let sectors = ["Tiktok LyovT", "Tiktok LyovT", "Tiktok LyovT", "Tiktok LyovT", "Tiktok LyovT", "Tiktok LyovT"];
         let sectorColors = sectors.map(() => `hsl(${Math.random() * 360}, 65%, 50%)`);
 
+        // Նվերների Համակարգ
+        const defaultGifts = [
+            { name: "🌹 Rose", val: "1 տոմս" },
+            { name: "🍦 Cone", val: "1 տոմս" },
+            { name: "💎 Multi.", val: "5 տոմս" },
+            { name: "🍩 Donut", val: "10 տոմս" },
+            { name: "🎈 Balloon", val: "20 տոմս" },
+            { name: "🦁 Lion", val: "100 տոմս" }
+        ];
+
+        function loadGifts() {
+            const saved = localStorage.getItem('lyov_live_gifts');
+            const gifts = saved ? JSON.parse(saved) : defaultGifts;
+            const container = document.getElementById('gift-list');
+            container.innerHTML = '';
+            gifts.forEach((g, i) => {
+                const div = document.createElement('div');
+                div.className = 'gift-item';
+                div.innerHTML = `<span class="gift-name" ondblclick="editGift(${i}, 'name')">${g.name}</span>
+                                 <span class="gift-val" ondblclick="editGift(${i}, 'val')">${g.val}</span>`;
+                container.appendChild(div);
+            });
+        }
+
+        function editGift(index, field) {
+            const saved = JSON.parse(localStorage.getItem('lyov_live_gifts')) || defaultGifts;
+            const newVal = prompt("Մուտքագրեք նորը:", saved[index][field]);
+            if (newVal !== null && newVal.trim() !== "") {
+                saved[index][field] = newVal;
+                localStorage.setItem('lyov_live_gifts', JSON.stringify(saved));
+                loadGifts();
+            }
+        }
+
         function drawWheel() {
             const numSectors = sectors.length;
             const arc = (2 * Math.PI) / numSectors;
             ctx.clearRect(0, 0, 500, 500);
-
             sectors.forEach((label, i) => {
                 const angle = i * arc;
                 ctx.beginPath();
@@ -218,7 +282,6 @@
                 ctx.fill();
                 ctx.strokeStyle = "rgba(255,255,255,0.2)";
                 ctx.stroke();
-
                 ctx.save();
                 ctx.translate(250, 250);
                 ctx.rotate(angle + arc / 2);
@@ -232,7 +295,6 @@
 
         function updateList() {
             itemListElement.innerHTML = '';
-            // Ցուցադրում ենք հակառակ հերթականությամբ (թարմը վերևում)
             [...sectors].reverse().forEach((item, index) => {
                 const realIndex = sectors.length - 1 - index;
                 const li = document.createElement('li');
@@ -245,10 +307,7 @@
         function addItem() {
             const input = document.getElementById('new-item').value.trim();
             if (!input) return;
-
-            // Ստուգում ենք "Անուն 5." ձևաչափը
             const match = input.match(/(.+)\s(\d+)\.$/);
-            
             if (match) {
                 const name = match[1].trim();
                 const count = parseInt(match[2]);
@@ -260,7 +319,6 @@
                 sectors.push(input);
                 sectorColors.push(`hsl(${Math.random() * 360}, 65%, 50%)`);
             }
-            
             document.getElementById('new-item').value = '';
             updateList();
         }
@@ -280,43 +338,27 @@
             if (isSpinning) return;
             isSpinning = true;
             resultText.innerText = "Հաջողություն...";
-
             const style = window.getComputedStyle(wheelWrapper);
             const matrix = new WebKitCSSMatrix(style.transform);
             const initialAngle = Math.atan2(matrix.b, matrix.a) * (180 / Math.PI);
-
             wheelWrapper.classList.remove('idle-spin');
             wheelWrapper.style.transition = "none";
             wheelWrapper.style.transform = `rotate(${initialAngle}deg)`;
-
             spinSound.currentTime = 0;
             spinSound.play();
-
             setTimeout(() => {
                 const extraRotation = 360 * 15 + Math.floor(Math.random() * 360);
                 currentRotation = initialAngle + extraRotation;
-                
                 wheelWrapper.style.transition = "transform 30s cubic-bezier(0.1, 0, 0.1, 1)";
                 wheelWrapper.style.transform = `rotate(${currentRotation}deg)`;
             }, 50);
-
             setTimeout(() => {
                 isSpinning = false;
-                
-                // ՃՇԳՐԻՏ ՀԱՇՎԱՐԿ
-                // Canvas-ում 0 աստիճանը աջ կողմն է, բայց սլաքը վերևում է (-90 աստիճան)
                 let finalRotation = currentRotation % 360;
                 if (finalRotation < 0) finalRotation += 360;
-
-                const numSectors = sectors.length;
-                const arcDegree = 360 / numSectors;
-                
-                // Սլաքը վերևում է (270 աստիճանի վրա canvas-ի համակարգում)
-                // Հաշվարկում ենք, թե որ սեկտորն է հայտնվել 270-ի տակ
+                const arcDegree = 360 / sectors.length;
                 let winningIndex = Math.floor((360 - finalRotation + 270) % 360 / arcDegree);
-                
                 resultText.innerText = "Հաղթող՝ " + sectors[winningIndex];
-
                 setTimeout(() => {
                     if (!isSpinning) {
                         wheelWrapper.style.transition = "none";
@@ -326,21 +368,29 @@
             }, 30000);
         };
 
+        let timerInterval;
         function startTimer() {
+            clearInterval(timerInterval);
             let m = parseInt(document.getElementById('min').value) || 0;
             let s = parseInt(document.getElementById('sec').value) || 0;
             let total = m * 60 + s;
             if (total <= 0) return;
-            const timer = setInterval(() => {
+            timerInterval = setInterval(() => {
                 total--;
                 document.getElementById('display').innerText = 
                     `${Math.floor(total/60).toString().padStart(2,'0')}:${(total%60).toString().padStart(2,'0')}`;
-                if (total <= 0) { clearInterval(timer); alert("Ժամանակն ավարտվեց"); }
+                if (total <= 0) { clearInterval(timerInterval); alert("Ժամանակն ավարտվեց"); }
             }, 1000);
         }
 
-        function resetTimer() { location.reload(); }
+        function resetTimer() {
+            clearInterval(timerInterval);
+            document.getElementById('display').innerText = "00:00";
+            document.getElementById('min').value = "";
+            document.getElementById('sec').value = "";
+        }
 
+        loadGifts();
         updateList();
     </script>
 </body>
