@@ -208,6 +208,12 @@
             const arc = (2 * Math.PI) / numSectors;
             ctx.clearRect(0, 0, 500, 500);
 
+            // Դինամիկ տառաչափի հաշվարկ
+            let fontSize = 18;
+            if (numSectors > 30) fontSize = 14;
+            if (numSectors > 60) fontSize = 10;
+            if (numSectors > 90) fontSize = 8;
+
             sectors.forEach((label, i) => {
                 const angle = i * arc;
                 ctx.beginPath();
@@ -224,15 +230,23 @@
                 ctx.rotate(angle + arc / 2);
                 ctx.textAlign = "right";
                 ctx.fillStyle = "#fff";
-                ctx.font = "bold 18px Arial";
-                ctx.fillText(label, 230, 8);
+                
+                // Օգտագործում ենք դինամիկ տառաչափը
+                ctx.font = `bold ${fontSize}px Arial`;
+                
+                // Եթե անունները շատ են, կրճատում ենք տեքստը, որ չթափվի
+                let displayText = label;
+                if (numSectors > 50 && displayText.length > 10) {
+                    displayText = displayText.substring(0, 8) + "..";
+                }
+
+                ctx.fillText(displayText, 240, fontSize / 3);
                 ctx.restore();
             });
         }
 
         function updateList() {
             itemListElement.innerHTML = '';
-            // Ցուցադրում ենք հակառակ հերթականությամբ (թարմը վերևում)
             [...sectors].reverse().forEach((item, index) => {
                 const realIndex = sectors.length - 1 - index;
                 const li = document.createElement('li');
@@ -246,7 +260,6 @@
             const input = document.getElementById('new-item').value.trim();
             if (!input) return;
 
-            // Ստուգում ենք "Անուն 5." ձևաչափը
             const match = input.match(/(.+)\s(\d+)\.$/);
             
             if (match) {
@@ -266,7 +279,7 @@
         }
 
         function removeItem(index) {
-            if (sectors.length > 2) {
+            if (sectors.length > 1) { // Թույլ տանք մինչև 1 հատ մնա
                 sectors.splice(index, 1);
                 sectorColors.splice(index, 1);
                 updateList();
@@ -277,7 +290,7 @@
         let currentRotation = 0;
 
         spinBtn.onclick = () => {
-            if (isSpinning) return;
+            if (isSpinning || sectors.length === 0) return;
             isSpinning = true;
             resultText.innerText = "Հաջողություն...";
 
@@ -296,23 +309,17 @@
                 const extraRotation = 360 * 15 + Math.floor(Math.random() * 360);
                 currentRotation = initialAngle + extraRotation;
                 
-                wheelWrapper.style.transition = "transform 30s cubic-bezier(0.1, 0, 0.1, 1)";
+                wheelWrapper.style.transition = "transform 10s cubic-bezier(0.1, 0, 0.1, 1)";
                 wheelWrapper.style.transform = `rotate(${currentRotation}deg)`;
             }, 50);
 
             setTimeout(() => {
                 isSpinning = false;
-                
-                // ՃՇԳՐԻՏ ՀԱՇՎԱՐԿ
-                // Canvas-ում 0 աստիճանը աջ կողմն է, բայց սլաքը վերևում է (-90 աստիճան)
                 let finalRotation = currentRotation % 360;
                 if (finalRotation < 0) finalRotation += 360;
 
                 const numSectors = sectors.length;
                 const arcDegree = 360 / numSectors;
-                
-                // Սլաքը վերևում է (270 աստիճանի վրա canvas-ի համակարգում)
-                // Հաշվարկում ենք, թե որ սեկտորն է հայտնվել 270-ի տակ
                 let winningIndex = Math.floor((360 - finalRotation + 270) % 360 / arcDegree);
                 
                 resultText.innerText = "Հաղթող՝ " + sectors[winningIndex];
@@ -323,7 +330,7 @@
                         wheelWrapper.classList.add('idle-spin');
                     }
                 }, 2000);
-            }, 30000);
+            }, 10000); // Պտտվելու ժամանակը դարձրի 10 վայրկյան ավելի արագ լինելու համար
         };
 
         function startTimer() {
@@ -344,5 +351,4 @@
         updateList();
     </script>
 </body>
-    </html>
-    
+</html>
