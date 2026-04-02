@@ -16,8 +16,10 @@
             font-family: 'Segoe UI', sans-serif;
             color: white;
             overflow-x: hidden;
+            box-sizing: border-box;
         }
 
+        /* Թայմեր */
         .timer-container {
             background: rgba(20, 20, 30, 0.6);
             padding: 15px 25px;
@@ -57,8 +59,8 @@
         }
 
         #result-text {
-            font-size: 26px;
-            margin-bottom: 25px;
+            font-size: 24px;
+            margin-bottom: 20px;
             color: #fff;
             height: 35px;
             font-weight: bold;
@@ -66,10 +68,11 @@
             text-align: center;
         }
 
+        /* Անիվի հատված */
         .wheel-section {
             position: relative;
-            width: 360px;
-            height: 360px;
+            width: 310px;
+            height: 310px;
             margin-bottom: 30px;
             display: flex;
             justify-content: center;
@@ -78,49 +81,38 @@
 
         .arrow {
             position: absolute;
-            top: -20px;
+            top: -15px;
             left: 50%;
             transform: translateX(-50%);
-            width: 30px;
-            height: 35px;
+            width: 25px;
+            height: 30px;
             background: #ff4757;
             clip-path: polygon(50% 100%, 0 0, 100% 0);
             z-index: 30;
-            filter: drop-shadow(0 0 8px #ff4757);
         }
 
         #wheel-wrapper {
-            width: 350px;
-            height: 350px;
+            width: 300px;
+            height: 300px;
             position: relative;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            border: 6px solid #f1c40f;
-            box-shadow: 0 0 25px #f1c40f, inset 0 0 20px #f1c40f;
+            border: 5px solid #f1c40f;
+            box-shadow: 0 0 20px #f1c40f;
         }
 
-        .idle-spin {
-            animation: idleRotate 20s linear infinite;
-        }
+        .idle-spin { animation: idleRotate 20s linear infinite; }
+        @keyframes idleRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        @keyframes idleRotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        #wheel {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-        }
+        #wheel { width: 100%; height: 100%; border-radius: 50%; }
 
         #spin-btn {
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 65px; height: 65px;
+            width: 55px; height: 55px;
             background: #f1c40f;
             border-radius: 50%;
             color: #000;
@@ -130,31 +122,110 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 0 20px #f1c40f;
-            font-size: 16px;
+            font-size: 14px;
             border: 2px solid #fff;
         }
 
-        .menu-container {
-            background: rgba(20, 20, 30, 0.6);
-            padding: 20px;
-            border-radius: 15px;
-            width: 100%;
-            max-width: 380px;
+        /* Ձվիկների Popup */
+        #egg-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
             box-sizing: border-box;
-            border: 1px solid rgba(255,255,255,0.1);
         }
 
-        .input-group { display: flex; gap: 8px; margin-bottom: 15px; }
-        input[type="text"] { flex: 1; padding: 10px; border-radius: 5px; border: none; background: rgba(0,0,0,0.3); color: white; }
-        .add-btn { background: #2ecc71; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; }
+        .egg-box {
+            background: #1a1a2e;
+            padding: 20px;
+            border-radius: 20px;
+            border: 3px solid #f1c40f;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(241, 196, 15, 0.4);
+            width: 95%;
+            max-width: 380px;
+            box-sizing: border-box;
+        }
+
+        .egg-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+            height: 140px;
+            position: relative;
+            width: 100%;
+        }
+
+        .egg {
+            width: 70px;
+            height: 95px;
+            background: radial-gradient(circle at 30% 30%, #f1c40f, #d4ac0d);
+            border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 22px;
+            font-weight: bold;
+            color: #000;
+            border: 2px solid #fff;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        @keyframes pulseEgg {
+            0% { transform: translate(-50%, 0) scale(1); }
+            50% { transform: translate(-50%, -10px) scale(1.15); box-shadow: 0 0 15px #f1c40f; }
+            100% { transform: translate(-50%, 0) scale(1); }
+        }
+        .pulse { animation: pulseEgg 1.5s ease-in-out; }
+
+        @keyframes shuffleCircle {
+            0% { transform: translate(-120%, 0); z-index: 1; }
+            25% { transform: translate(0, -20px); scale: 0.85; z-index: 0; }
+            50% { transform: translate(120%, 0); z-index: 1; }
+            75% { transform: translate(0, 20px); scale: 1.1; z-index: 2; }
+            100% { transform: translate(-120%, 0); z-index: 1; }
+        }
+        .shuffling { animation: shuffleCircle 1.1s linear infinite; }
+
+        .egg.open {
+            background: #fff;
+            color: #e74c3c;
+            transform: translate(-50%, 0) scale(1.1) !important;
+            box-shadow: 0 0 25px #fff;
+            z-index: 10;
+        }
+
+        /* Մենյու */
+        .menu-container {
+            background: rgba(20, 20, 30, 0.6);
+            padding: 15px;
+            border-radius: 15px;
+            width: 95%;
+            max-width: 380px;
+            box-sizing: border-box;
+        }
+
+        .input-group { display: flex; gap: 5px; margin-bottom: 10px; }
+        input[type="text"] { flex: 1; padding: 10px; border-radius: 5px; border: none; background: rgba(0,0,0,0.4); color: white; }
+        .add-btn { background: #2ecc71; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
         
-        .item-list { max-height: 200px; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
+        .item-list { max-height: 150px; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
         .item-list li {
             background: rgba(255,255,255,0.05);
             margin-bottom: 5px; padding: 8px 12px;
             display: flex; justify-content: space-between; align-items: center;
             border-radius: 6px;
+            font-size: 14px;
         }
         .del-btn { background: #ff4757; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
     </style>
@@ -178,6 +249,19 @@
         <div id="spin-btn">GO</div>
         <div id="wheel-wrapper" class="idle-spin">
             <canvas id="wheel" width="500" height="500"></canvas>
+        </div>
+    </div>
+
+    <div id="egg-overlay">
+        <div class="egg-box">
+            <h1 id="egg-winner-name" style="color: #f1c40f; margin: 0; font-size: 26px; word-wrap: break-word;"></h1>
+            <h2 id="egg-status" style="margin-top: 5px; font-size: 18px;">Հաղթեց!</h2>
+            <div class="egg-container">
+                <div class="egg" id="egg-0" style="margin-left: -90px;" onclick="pickEgg(0)">?</div>
+                <div class="egg" id="egg-1" style="margin-left: 0;" onclick="pickEgg(1)">?</div>
+                <div class="egg" id="egg-2" style="margin-left: 90px;" onclick="pickEgg(2)">?</div>
+            </div>
+            <button class="timer-btn" style="margin-top:30px; padding: 12px 30px; display:none;" id="close-egg" onclick="closeEggGame()">ՓԱԿԵԼ</button>
         </div>
     </div>
 
@@ -207,41 +291,17 @@
             const numSectors = sectors.length;
             const arc = (2 * Math.PI) / numSectors;
             ctx.clearRect(0, 0, 500, 500);
-
-            // Դինամիկ տառաչափի հաշվարկ
-            let fontSize = 18;
-            if (numSectors > 30) fontSize = 14;
-            if (numSectors > 60) fontSize = 10;
-            if (numSectors > 90) fontSize = 8;
+            let fontSize = numSectors > 30 ? 12 : 18;
 
             sectors.forEach((label, i) => {
                 const angle = i * arc;
-                ctx.beginPath();
-                ctx.fillStyle = sectorColors[i];
-                ctx.moveTo(250, 250);
-                ctx.arc(250, 250, 250, angle, angle + arc);
-                ctx.lineTo(250, 250);
-                ctx.fill();
-                ctx.strokeStyle = "rgba(255,255,255,0.2)";
-                ctx.stroke();
-
-                ctx.save();
-                ctx.translate(250, 250);
-                ctx.rotate(angle + arc / 2);
-                ctx.textAlign = "right";
-                ctx.fillStyle = "#fff";
-                
-                // Օգտագործում ենք դինամիկ տառաչափը
+                ctx.beginPath(); ctx.fillStyle = sectorColors[i];
+                ctx.moveTo(250, 250); ctx.arc(250, 250, 250, angle, angle + arc);
+                ctx.fill(); ctx.save();
+                ctx.translate(250, 250); ctx.rotate(angle + arc / 2);
+                ctx.textAlign = "right"; ctx.fillStyle = "#fff";
                 ctx.font = `bold ${fontSize}px Arial`;
-                
-                // Եթե անունները շատ են, կրճատում ենք տեքստը, որ չթափվի
-                let displayText = label;
-                if (numSectors > 50 && displayText.length > 10) {
-                    displayText = displayText.substring(0, 8) + "..";
-                }
-
-                ctx.fillText(displayText, 240, fontSize / 3);
-                ctx.restore();
+                ctx.fillText(label.substring(0,12), 240, fontSize/3); ctx.restore();
             });
         }
 
@@ -259,95 +319,114 @@
         function addItem() {
             const input = document.getElementById('new-item').value.trim();
             if (!input) return;
-
             const match = input.match(/(.+)\s(\d+)\.$/);
-            
             if (match) {
-                const name = match[1].trim();
-                const count = parseInt(match[2]);
-                for (let i = 0; i < count; i++) {
-                    sectors.push(name);
+                for (let i = 0; i < parseInt(match[2]); i++) {
+                    sectors.push(match[1].trim());
                     sectorColors.push(`hsl(${Math.random() * 360}, 65%, 50%)`);
                 }
             } else {
-                sectors.push(input);
-                sectorColors.push(`hsl(${Math.random() * 360}, 65%, 50%)`);
+                sectors.push(input); sectorColors.push(`hsl(${Math.random() * 360}, 65%, 50%)`);
             }
-            
-            document.getElementById('new-item').value = '';
-            updateList();
+            document.getElementById('new-item').value = ''; updateList();
         }
 
-        function removeItem(index) {
-            if (sectors.length > 1) { // Թույլ տանք մինչև 1 հատ մնա
-                sectors.splice(index, 1);
-                sectorColors.splice(index, 1);
-                updateList();
-            }
-        }
+        function removeItem(i) { if(sectors.length > 1) { sectors.splice(i,1); sectorColors.splice(i,1); updateList(); } }
 
         let isSpinning = false;
-        let currentRotation = 0;
-
         spinBtn.onclick = () => {
-            if (isSpinning || sectors.length === 0) return;
+            if (isSpinning) return;
             isSpinning = true;
-            resultText.innerText = "Հաջողություն...";
-
-            const style = window.getComputedStyle(wheelWrapper);
-            const matrix = new WebKitCSSMatrix(style.transform);
-            const initialAngle = Math.atan2(matrix.b, matrix.a) * (180 / Math.PI);
-
+            resultText.innerText = "Պտտվում է...";
             wheelWrapper.classList.remove('idle-spin');
             wheelWrapper.style.transition = "none";
-            wheelWrapper.style.transform = `rotate(${initialAngle}deg)`;
-
-            spinSound.currentTime = 0;
+            wheelWrapper.style.transform = "rotate(0deg)";
             spinSound.play();
-
             setTimeout(() => {
-                const extraRotation = 360 * 15 + Math.floor(Math.random() * 360);
-                currentRotation = initialAngle + extraRotation;
-                
+                const extraRotation = 3600 + Math.floor(Math.random() * 360);
                 wheelWrapper.style.transition = "transform 10s cubic-bezier(0.1, 0, 0.1, 1)";
-                wheelWrapper.style.transform = `rotate(${currentRotation}deg)`;
+                wheelWrapper.style.transform = `rotate(${extraRotation}deg)`;
             }, 50);
-
             setTimeout(() => {
                 isSpinning = false;
-                let finalRotation = currentRotation % 360;
-                if (finalRotation < 0) finalRotation += 360;
-
-                const numSectors = sectors.length;
-                const arcDegree = 360 / numSectors;
-                let winningIndex = Math.floor((360 - finalRotation + 270) % 360 / arcDegree);
-                
-                resultText.innerText = "Հաղթող՝ " + sectors[winningIndex];
-
-                setTimeout(() => {
-                    if (!isSpinning) {
-                        wheelWrapper.style.transition = "none";
-                        wheelWrapper.classList.add('idle-spin');
-                    }
-                }, 2000);
-            }, 10000); // Պտտվելու ժամանակը դարձրի 10 վայրկյան ավելի արագ լինելու համար
+                const style = window.getComputedStyle(wheelWrapper);
+                const matrix = new WebKitCSSMatrix(style.transform);
+                const angle = (Math.atan2(matrix.b, matrix.a) * (180/Math.PI) + 360) % 360;
+                const winningIndex = Math.floor((360 - angle + 270) % 360 / (360 / sectors.length));
+                let winner = sectors[winningIndex];
+                resultText.innerText = "Հաղթող՝ " + winner;
+                setTimeout(() => startEggGame(winner), 1500);
+            }, 10050);
         };
 
+        let eggValues = [50, 100, 1000];
+        let canPick = false;
+
+        async function startEggGame(name) {
+            document.getElementById('egg-overlay').style.display = 'flex';
+            document.getElementById('egg-winner-name').innerText = name;
+            document.getElementById('egg-status').innerText = "Ստուգիր ձվիկները...";
+            const eggs = [document.getElementById('egg-0'), document.getElementById('egg-1'), document.getElementById('egg-2')];
+            canPick = false;
+
+            // Ցուցադրել արժեքները Pulse անիմացիայով
+            for (let i = 0; i < 3; i++) {
+                eggs[i].innerText = eggValues[i]; eggs[i].classList.add('pulse');
+                await new Promise(r => setTimeout(r, 1500)); eggs[i].classList.remove('pulse');
+            }
+
+            document.getElementById('egg-status').innerText = "Խառնվում է (10 վ)...";
+            eggs.forEach(e => { e.innerText = "?"; e.classList.add('shuffling'); });
+
+            setTimeout(() => {
+                eggs.forEach(e => e.classList.remove('shuffling'));
+                document.getElementById('egg-status').innerText = "ԸՆՏՐԻՐ ՄԵԿԸ";
+                canPick = true;
+            }, 10000);
+        }
+
+        function pickEgg(idx) {
+            if (!canPick) return; canPick = false;
+            const eggs = [document.getElementById('egg-0'), document.getElementById('egg-1'), document.getElementById('egg-2')];
+            
+            // ԳԱՂՏՆԻ ՇԱՆՍԵՐ (1000 = 0%)
+            let randomNum = Math.random() * 100;
+            let chosenPrize = (randomNum < 60) ? 50 : 100; // 60% -> 50, 40% -> 100
+
+            let remainingPrizes = [50, 100, 1000].filter(p => p !== chosenPrize);
+            remainingPrizes.sort(() => Math.random() - 0.5);
+
+            let finalLayout = [];
+            let rIdx = 0;
+            for (let i = 0; i < 3; i++) {
+                if (i === idx) finalLayout[i] = chosenPrize;
+                else finalLayout[i] = remainingPrizes[rIdx++];
+            }
+
+            eggs.forEach((e, i) => { 
+                e.innerText = finalLayout[i]; 
+                if(i === idx) e.classList.add('open'); 
+            });
+            document.getElementById('egg-status').innerText = "Շնորհավոր!";
+            document.getElementById('close-egg').style.display = 'block';
+        }
+
+        function closeEggGame() {
+            document.getElementById('egg-overlay').style.display = 'none';
+            document.querySelectorAll('.egg').forEach(e => { e.classList.remove('open'); e.innerText = "?"; });
+            wheelWrapper.classList.add('idle-spin');
+        }
+
         function startTimer() {
-            let m = parseInt(document.getElementById('min').value) || 0;
-            let s = parseInt(document.getElementById('sec').value) || 0;
-            let total = m * 60 + s;
+            let total = (parseInt(document.getElementById('min').value)||0)*60 + (parseInt(document.getElementById('sec').value)||0);
             if (total <= 0) return;
             const timer = setInterval(() => {
                 total--;
-                document.getElementById('display').innerText = 
-                    `${Math.floor(total/60).toString().padStart(2,'0')}:${(total%60).toString().padStart(2,'0')}`;
+                document.getElementById('display').innerText = `${Math.floor(total/60).toString().padStart(2,'0')}:${(total%60).toString().padStart(2,'0')}`;
                 if (total <= 0) { clearInterval(timer); alert("Ժամանակն ավարտվեց"); }
             }, 1000);
         }
-
         function resetTimer() { location.reload(); }
-
         updateList();
     </script>
 </body>
