@@ -17,6 +17,14 @@
             color: white;
             overflow-x: hidden;
             box-sizing: border-box;
+            /* Ավելացված է սահուն Zoom-ի համար */
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Սիրուն Zoom էֆեկտ */
+        .screen-zoom-active {
+            transform: scale(1.8) translateY(10vh);
+            transform-origin: center 120px;
         }
 
         /* Թայմեր */
@@ -28,6 +36,7 @@
             text-align: center;
             border: 2px solid #f1c40f;
             box-shadow: 0 0 15px rgba(241, 196, 15, 0.4);
+            transition: opacity 0.5s;
         }
 
         .timer-display {
@@ -179,13 +188,6 @@
             transition: 0.3s;
         }
 
-        @keyframes pulseEgg {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.15); box-shadow: 0 0 15px #f1c40f; }
-            100% { transform: scale(1); }
-        }
-        .pulse { animation: pulseEgg 1s ease-in-out infinite; }
-
         @keyframes shuffleMove {
             0% { transform: translateX(-40px); }
             50% { transform: translateX(40px); }
@@ -209,7 +211,10 @@
             width: 95%;
             max-width: 380px;
             box-sizing: border-box;
+            transition: opacity 0.5s;
         }
+
+        .zoom-hide { opacity: 0; pointer-events: none; }
 
         .input-group { display: flex; gap: 5px; margin-bottom: 10px; }
         input[type="text"] { flex: 1; padding: 10px; border-radius: 5px; border: none; background: rgba(0,0,0,0.4); color: white; }
@@ -235,7 +240,7 @@
 </head>
 <body>
 
-    <div class="timer-container">
+    <div class="timer-container" id="timer-box">
         <div class="timer-display" id="display">00:00</div>
         <div class="timer-inputs">
             <input type="number" id="min" placeholder="Ր"> :
@@ -267,7 +272,7 @@
         </div>
     </div>
 
-    <div class="menu-container">
+    <div class="menu-container" id="menu-box">
         <div class="input-group">
             <input type="text" id="new-item" placeholder="Անուն կամ 'Անուն 5.'">
             <button class="add-btn" onclick="addItem()">+</button>
@@ -276,8 +281,6 @@
         <ul class="item-list" id="item-list"></ul>
     </div>
 
-    <audio id="spin-sound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
-
     <script>
         const canvas = document.getElementById('wheel');
         const ctx = canvas.getContext('2d');
@@ -285,16 +288,36 @@
         const spinBtn = document.getElementById('spin-btn');
         const resultText = document.getElementById('result-text');
         const itemListElement = document.getElementById('item-list');
-        const spinSound = document.getElementById('spin-sound');
+        const menuBox = document.getElementById('menu-box');
+        const timerBox = document.getElementById('timer-box');
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTick() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+        function playWin() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.5);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+        }
 
         let sectors = ["Tiktok LyovT", "Tiktok LyovT", "Tiktok LyovT", "Tiktok LyovT", "Tiktok LyovT", "Tiktok LyovT"];
-        
-        // Ֆունկցիա՝ պատահական վառ գույն ստանալու համար
         function getRandomColor() {
             const hue = Math.floor(Math.random() * 360);
             return `hsl(${hue}, 70%, 50%)`;
         }
-
         let sectorColors = sectors.map(() => getRandomColor());
 
         function drawWheel() {
@@ -302,7 +325,6 @@
             const arc = (2 * Math.PI) / numSectors;
             ctx.clearRect(0, 0, 500, 500);
             let fontSize = numSectors > 30 ? 10 : 16;
-
             sectors.forEach((label, i) => {
                 const angle = i * arc;
                 ctx.beginPath(); ctx.fillStyle = sectorColors[i];
@@ -356,29 +378,65 @@
         }
 
         let isSpinning = false;
+        let currentRotation = 0;
+
         spinBtn.onclick = () => {
             if (isSpinning) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
             isSpinning = true;
             resultText.innerText = "Պտտվում է...";
+            document.body.classList.remove('screen-zoom-active');
+            menuBox.classList.remove('zoom-hide');
+            timerBox.classList.remove('zoom-hide');
             wheelWrapper.classList.remove('idle-spin');
-            wheelWrapper.style.transition = "none";
-            wheelWrapper.style.transform = "rotate(0deg)";
-            spinSound.play();
-            setTimeout(() => {
-                const extraRotation = 3600 + Math.floor(Math.random() * 360);
-                wheelWrapper.style.transition = "transform 10s cubic-bezier(0.1, 0, 0.1, 1)";
-                wheelWrapper.style.transform = `rotate(${extraRotation}deg)`;
-            }, 50);
-            setTimeout(() => {
-                isSpinning = false;
-                const style = window.getComputedStyle(wheelWrapper);
-                const matrix = new WebKitCSSMatrix(style.transform);
-                const angle = (Math.atan2(matrix.b, matrix.a) * (180/Math.PI) + 360) % 360;
-                const winningIndex = Math.floor((360 - angle + 270) % 360 / (360 / sectors.length));
-                let winner = sectors[winningIndex];
-                resultText.innerText = "Հաղթող՝ " + winner;
-                setTimeout(() => startEggGame(winner), 1500);
-            }, 10050);
+            
+            const totalTime = 30000; // 30 վայրկյան
+            const startRotation = currentRotation;
+            const extraRotation = 10800 + Math.floor(Math.random() * 360);
+            const startTime = performance.now();
+            let lastTickAngle = 0;
+            let zoomTriggered = false;
+
+            function animate(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / totalTime, 1);
+                const ease = 1 - Math.pow(1 - progress, 2);
+                currentRotation = (extraRotation * ease);
+                wheelWrapper.style.transform = `rotate(${currentRotation}deg)`;
+
+                if (Math.abs(currentRotation - lastTickAngle) >= (360 / sectors.length)) {
+                    playTick(); lastTickAngle = currentRotation;
+                }
+
+                // 24-րդ վայրկյանին սկսում է Zoom-ը (որ 25-ին լրիվ մեծացած լինի)
+                if (elapsed >= 24000 && !zoomTriggered) {
+                    zoomTriggered = true;
+                    document.body.classList.add('screen-zoom-active');
+                    menuBox.classList.add('zoom-hide');
+                    timerBox.classList.add('zoom-hide');
+                }
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    isSpinning = false;
+                    playWin();
+                    
+                    // Անմիջապես զրոյացնել Zoom-ը
+                    document.body.classList.remove('screen-zoom-active');
+                    menuBox.classList.remove('zoom-hide');
+                    timerBox.classList.remove('zoom-hide');
+
+                    const angle = currentRotation % 360;
+                    const winningIndex = Math.floor((360 - angle + 270) % 360 / (360 / sectors.length));
+                    let winner = sectors[winningIndex];
+                    resultText.innerText = "Հաղթող՝ " + winner;
+                    
+                    setTimeout(() => startEggGame(winner), 1000);
+                }
+            }
+            requestAnimationFrame(animate);
         };
 
         let canPick = false;
@@ -391,14 +449,16 @@
             document.getElementById('close-egg').style.display = 'none';
 
             eggs[0].innerText = "50"; eggs[1].innerText = "100";
-            eggs.forEach(e => e.classList.add('pulse'));
             await new Promise(r => setTimeout(r, 2000));
             
-            eggs.forEach(e => { e.classList.remove('pulse'); e.innerText = "?"; e.classList.add('shuffling'); });
+            eggs.forEach(e => { 
+                e.innerText = "?";
+                e.classList.add('shuffling'); // Ավելացվել է խառնվելու անիմացիան
+            });
             document.getElementById('egg-status').innerText = "Խառնվում է...";
 
             setTimeout(() => {
-                eggs.forEach(e => e.classList.remove('shuffling'));
+                eggs.forEach(e => e.classList.remove('shuffling')); // Հեռացնել անիմացիան
                 document.getElementById('egg-status').innerText = "ԸՆՏՐԻՐ ՄԵԿԸ";
                 canPick = true;
             }, 4000);
@@ -407,13 +467,11 @@
         function pickEgg(idx) {
             if (!canPick) return; canPick = false;
             const eggs = [document.getElementById('egg-0'), document.getElementById('egg-1')];
-            let rand = Math.random() * 100;
-            let winValue = (rand < 70) ? 50 : 100;
+            let winValue = Math.random() < 0.7 ? 50 : 100;
             let otherValue = (winValue === 50) ? 100 : 50;
             eggs[idx].innerText = winValue;
             eggs[idx].classList.add('open');
-            const otherIdx = idx === 0 ? 1 : 0;
-            eggs[otherIdx].innerText = otherValue;
+            eggs[idx === 0 ? 1 : 0].innerText = otherValue;
             document.getElementById('egg-status').innerText = "Շնորհավոր! Ստացար " + winValue;
             document.getElementById('close-egg').style.display = 'block';
         }
