@@ -71,8 +71,8 @@
         /* Անիվի հատված */
         .wheel-section {
             position: relative;
-            width: 310px;
-            height: 310px;
+            width: 355px;
+            height: 355px;
             margin-bottom: 30px;
             display: flex;
             justify-content: center;
@@ -92,8 +92,8 @@
         }
 
         #wheel-wrapper {
-            width: 300px;
-            height: 300px;
+            width: 345px;
+            height: 345px;
             position: relative;
             border-radius: 50%;
             display: flex;
@@ -224,7 +224,13 @@
             border-radius: 6px;
             font-size: 14px;
         }
-        .del-btn { background: #ff4757; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+        .item-list li span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 10px;
+        }
+        .del-btn { background: #ff4757; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -282,7 +288,14 @@
         const spinSound = document.getElementById('spin-sound');
 
         let sectors = ["Tiktok LyovT", "Tiktok LyovT", "Tiktok LyovT", "Tiktok LyovT", "Tiktok LyovT", "Tiktok LyovT"];
-        let sectorColors = sectors.map(() => `hsl(${Math.random() * 360}, 65%, 50%)`);
+        
+        // Ֆունկցիա՝ պատահական վառ գույն ստանալու համար
+        function getRandomColor() {
+            const hue = Math.floor(Math.random() * 360);
+            return `hsl(${hue}, 70%, 50%)`;
+        }
+
+        let sectorColors = sectors.map(() => getRandomColor());
 
         function drawWheel() {
             const numSectors = sectors.length;
@@ -317,14 +330,18 @@
             if (!input) return;
             const match = input.match(/(.+)\s(\d+)\.$/);
             if (match) {
-                for (let i = 0; i < parseInt(match[2]); i++) {
-                    sectors.push(match[1].trim());
-                    sectorColors.push(`hsl(${Math.random() * 360}, 65%, 50%)`);
+                const count = parseInt(match[2]);
+                const name = match[1].trim();
+                for (let i = 0; i < count; i++) {
+                    sectors.unshift(name);
+                    sectorColors.unshift(getRandomColor());
                 }
             } else {
-                sectors.push(input); sectorColors.push(`hsl(${Math.random() * 360}, 65%, 50%)`);
+                sectors.unshift(input); 
+                sectorColors.unshift(getRandomColor());
             }
-            document.getElementById('new-item').value = ''; updateList();
+            document.getElementById('new-item').value = ''; 
+            updateList();
         }
 
         function removeItem(i) { if(sectors.length > 1) { sectors.splice(i,1); sectorColors.splice(i,1); updateList(); } }
@@ -373,7 +390,6 @@
             canPick = false;
             document.getElementById('close-egg').style.display = 'none';
 
-            // Նախապես ցույց տալ 50 և 100
             eggs[0].innerText = "50"; eggs[1].innerText = "100";
             eggs.forEach(e => e.classList.add('pulse'));
             await new Promise(r => setTimeout(r, 2000));
@@ -391,19 +407,13 @@
         function pickEgg(idx) {
             if (!canPick) return; canPick = false;
             const eggs = [document.getElementById('egg-0'), document.getElementById('egg-1')];
-            
-            // 60% շանս -> 50, 40% շանս -> 100
             let rand = Math.random() * 100;
             let winValue = (rand < 70) ? 50 : 100;
             let otherValue = (winValue === 50) ? 100 : 50;
-
             eggs[idx].innerText = winValue;
             eggs[idx].classList.add('open');
-            
-            // Մյուս ձվիկի արժեքը
             const otherIdx = idx === 0 ? 1 : 0;
             eggs[otherIdx].innerText = otherValue;
-
             document.getElementById('egg-status').innerText = "Շնորհավոր! Ստացար " + winValue;
             document.getElementById('close-egg').style.display = 'block';
         }
