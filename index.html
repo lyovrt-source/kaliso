@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LyovT Neon Wheel - Pro</title>
+    <title>LyovT Neon Wheel - Prize Pool</title>
     <style>
         body {
             display: flex;
@@ -17,11 +17,9 @@
             color: white;
             overflow-x: hidden;
             box-sizing: border-box;
-            /* Ավելացված է սահուն Zoom-ի համար */
             transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* Սիրուն Zoom էֆեկտ */
         .screen-zoom-active {
             transform: scale(1.8) translateY(10vh);
             transform-origin: center 120px;
@@ -47,8 +45,17 @@
             text-shadow: 0 0 10px #f1c40f;
         }
 
+        /* Կոճակների դասավորությունը մեկ տողով */
+        .timer-inputs {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: nowrap; /* Թույլ չի տալիս անցնել հաջորդ տող */
+            gap: 5px;
+        }
+
         .timer-inputs input {
-            width: 45px;
+            width: 40px;
             padding: 5px;
             text-align: center;
             border-radius: 5px;
@@ -60,11 +67,50 @@
         .timer-btn {
             background: #f1c40f;
             border: none;
-            padding: 6px 12px;
+            padding: 8px 12px;
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
-            margin-left: 5px;
+            color: #000;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 35px;
+        }
+        
+        .timer-btn:active { transform: scale(0.9); }
+
+        /* Մրցանակային ֆոնդ */
+        #prize-pool-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(241, 196, 15, 0.6);
+            padding: 15px 40px;
+            border-radius: 30px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 20px rgba(241, 196, 15, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            min-width: 250px;
+        }
+
+        #prize-label {
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        #prize-amount-box {
+            font-size: 28px;
+            font-weight: 900;
+            color: #f1c40f;
+            text-shadow: 0 0 10px rgba(241, 196, 15, 0.8);
         }
 
         #result-text {
@@ -77,7 +123,6 @@
             text-align: center;
         }
 
-        /* Անիվի հատված */
         .wheel-section {
             position: relative;
             width: 355px;
@@ -135,75 +180,6 @@
             border: 2px solid #fff;
         }
 
-        /* Ձվիկների Popup */
-        #egg-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 1000;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-
-        .egg-box {
-            background: #1a1a2e;
-            padding: 20px;
-            border-radius: 20px;
-            border: 3px solid #f1c40f;
-            text-align: center;
-            box-shadow: 0 0 40px rgba(241, 196, 15, 0.4);
-            width: 95%;
-            max-width: 380px;
-            box-sizing: border-box;
-        }
-
-        .egg-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 40px;
-            margin-top: 30px;
-            height: 140px;
-            position: relative;
-            width: 100%;
-        }
-
-        .egg {
-            width: 80px;
-            height: 110px;
-            background: radial-gradient(circle at 30% 30%, #f1c40f, #d4ac0d);
-            border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 26px;
-            font-weight: bold;
-            color: #000;
-            border: 2px solid #fff;
-            transition: 0.3s;
-        }
-
-        @keyframes shuffleMove {
-            0% { transform: translateX(-40px); }
-            50% { transform: translateX(40px); }
-            100% { transform: translateX(-40px); }
-        }
-        .shuffling { animation: shuffleMove 0.5s linear infinite; }
-
-        .egg.open {
-            background: #fff;
-            color: #e74c3c;
-            transform: scale(1.2) !important;
-            box-shadow: 0 0 25px #fff;
-            z-index: 10;
-        }
-
-        /* Մենյու */
         .menu-container {
             background: rgba(20, 20, 30, 0.6);
             padding: 15px;
@@ -229,13 +205,6 @@
             border-radius: 6px;
             font-size: 14px;
         }
-        .item-list li span {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            margin-right: 10px;
-        }
-        .del-btn { background: #ff4757; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -243,32 +212,27 @@
     <div class="timer-container" id="timer-box">
         <div class="timer-display" id="display">00:00</div>
         <div class="timer-inputs">
-            <input type="number" id="min" placeholder="Ր"> :
+            <input type="number" id="min" placeholder="Ր">
+            <span>:</span>
             <input type="number" id="sec" placeholder="Վ">
             <button class="timer-btn" onclick="startTimer()">ՍԿՍԵԼ</button>
             <button class="timer-btn" style="background:#95a5a6" onclick="resetTimer()">R</button>
+            <button class="timer-btn" style="background:#e67e22; color:white; font-size: 16px;" onclick="setKopekRate()">🪙</button>
         </div>
     </div>
 
-    <div id="result-text">Tiktok LyovT</div>
+    <div id="prize-pool-container">
+        <div id="prize-label">Մրցանակային ֆոնդ</div>
+        <div id="prize-amount-box"><span id="prize-number">0</span> կոպեկ</div>
+    </div>
+
+    <div id="result-text"></div>
 
     <div class="wheel-section">
         <div class="arrow"></div>
         <div id="spin-btn">GO</div>
         <div id="wheel-wrapper" class="idle-spin">
             <canvas id="wheel" width="500" height="500"></canvas>
-        </div>
-    </div>
-
-    <div id="egg-overlay">
-        <div class="egg-box">
-            <h1 id="egg-winner-name" style="color: #f1c40f; margin: 0; font-size: 26px; word-wrap: break-word;"></h1>
-            <h2 id="egg-status" style="margin-top: 5px; font-size: 18px;">Հաղթեց!</h2>
-            <div class="egg-container">
-                <div class="egg" id="egg-0" onclick="pickEgg(0)">?</div>
-                <div class="egg" id="egg-1" onclick="pickEgg(1)">?</div>
-            </div>
-            <button class="timer-btn" style="margin-top:30px; padding: 12px 30px; display:none;" id="close-egg" onclick="closeEggGame()">ՓԱԿԵԼ</button>
         </div>
     </div>
 
@@ -290,6 +254,11 @@
         const itemListElement = document.getElementById('item-list');
         const menuBox = document.getElementById('menu-box');
         const timerBox = document.getElementById('timer-box');
+        const prizeNumberEl = document.getElementById('prize-number');
+
+        let kopekRate = 2; 
+        let sectors = [];
+        let sectorColors = [];
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playTick() {
@@ -313,14 +282,29 @@
             osc.start(); osc.stop(audioCtx.currentTime + 0.5);
         }
 
-        let sectors = ["Tiktok LyovT", "Tiktok LyovT", "Tiktok LyovT", "Tiktok LyovT", "Tiktok LyovT", "Tiktok LyovT"];
+        function setKopekRate() {
+            const val = prompt("Քանի՞ կոպեկ ավելանա ամեն անունից:", kopekRate);
+            if (val !== null && !isNaN(val)) {
+                kopekRate = parseFloat(val);
+                updatePrizePool();
+            }
+        }
+
         function getRandomColor() {
             const hue = Math.floor(Math.random() * 360);
             return `hsl(${hue}, 70%, 50%)`;
         }
-        let sectorColors = sectors.map(() => getRandomColor());
+
+        function updatePrizePool() {
+            const totalKopeks = sectors.length * kopekRate;
+            prizeNumberEl.innerText = Number.isInteger(totalKopeks) ? totalKopeks : totalKopeks.toFixed(2);
+        }
 
         function drawWheel() {
+            if(sectors.length === 0) {
+                ctx.clearRect(0, 0, 500, 500);
+                return;
+            }
             const numSectors = sectors.length;
             const arc = (2 * Math.PI) / numSectors;
             ctx.clearRect(0, 0, 500, 500);
@@ -341,10 +325,11 @@
             itemListElement.innerHTML = '';
             sectors.forEach((item, index) => {
                 const li = document.createElement('li');
-                li.innerHTML = `<span>${item}</span> <button class="del-btn" onclick="removeItem(${index})">X</button>`;
+                li.innerHTML = `<span>${item}</span> <button class="del-btn" style="background:#ff4757; color:white; border:none; padding:4px 10px; border-radius:4px; cursor:pointer;" onclick="removeItem(${index})">X</button>`;
                 itemListElement.appendChild(li);
             });
             drawWheel();
+            updatePrizePool();
         }
 
         function addItem() {
@@ -366,7 +351,11 @@
             updateList();
         }
 
-        function removeItem(i) { if(sectors.length > 1) { sectors.splice(i,1); sectorColors.splice(i,1); updateList(); } }
+        function removeItem(i) {
+            sectors.splice(i,1); 
+            sectorColors.splice(i,1); 
+            updateList();
+        }
 
         function shuffleItems() {
             for (let i = sectors.length - 1; i > 0; i--) {
@@ -381,7 +370,7 @@
         let currentRotation = 0;
 
         spinBtn.onclick = () => {
-            if (isSpinning) return;
+            if (isSpinning || sectors.length === 0) return;
             if (audioCtx.state === 'suspended') audioCtx.resume();
             
             isSpinning = true;
@@ -391,8 +380,7 @@
             timerBox.classList.remove('zoom-hide');
             wheelWrapper.classList.remove('idle-spin');
             
-            const totalTime = 30000; // 30 վայրկյան
-            const startRotation = currentRotation;
+            const totalTime = 30000; 
             const extraRotation = 10800 + Math.floor(Math.random() * 360);
             const startTime = performance.now();
             let lastTickAngle = 0;
@@ -409,7 +397,6 @@
                     playTick(); lastTickAngle = currentRotation;
                 }
 
-                // 24-րդ վայրկյանին սկսում է Zoom-ը (որ 25-ին լրիվ մեծացած լինի)
                 if (elapsed >= 24000 && !zoomTriggered) {
                     zoomTriggered = true;
                     document.body.classList.add('screen-zoom-active');
@@ -422,8 +409,6 @@
                 } else {
                     isSpinning = false;
                     playWin();
-                    
-                    // Անմիջապես զրոյացնել Zoom-ը
                     document.body.classList.remove('screen-zoom-active');
                     menuBox.classList.remove('zoom-hide');
                     timerBox.classList.remove('zoom-hide');
@@ -433,54 +418,11 @@
                     let winner = sectors[winningIndex];
                     resultText.innerText = "Հաղթող՝ " + winner;
                     
-                    setTimeout(() => startEggGame(winner), 1000);
+                    setTimeout(() => { wheelWrapper.classList.add('idle-spin'); }, 2000);
                 }
             }
             requestAnimationFrame(animate);
         };
-
-        let canPick = false;
-        async function startEggGame(name) {
-            document.getElementById('egg-overlay').style.display = 'flex';
-            document.getElementById('egg-winner-name').innerText = name;
-            document.getElementById('egg-status').innerText = "Ուշադիր նայիր...";
-            const eggs = [document.getElementById('egg-0'), document.getElementById('egg-1')];
-            canPick = false;
-            document.getElementById('close-egg').style.display = 'none';
-
-            eggs[0].innerText = "50"; eggs[1].innerText = "100";
-            await new Promise(r => setTimeout(r, 2000));
-            
-            eggs.forEach(e => { 
-                e.innerText = "?";
-                e.classList.add('shuffling'); // Ավելացվել է խառնվելու անիմացիան
-            });
-            document.getElementById('egg-status').innerText = "Խառնվում է...";
-
-            setTimeout(() => {
-                eggs.forEach(e => e.classList.remove('shuffling')); // Հեռացնել անիմացիան
-                document.getElementById('egg-status').innerText = "ԸՆՏՐԻՐ ՄԵԿԸ";
-                canPick = true;
-            }, 4000);
-        }
-
-        function pickEgg(idx) {
-            if (!canPick) return; canPick = false;
-            const eggs = [document.getElementById('egg-0'), document.getElementById('egg-1')];
-            let winValue = Math.random() < 0.7 ? 50 : 100;
-            let otherValue = (winValue === 50) ? 100 : 50;
-            eggs[idx].innerText = winValue;
-            eggs[idx].classList.add('open');
-            eggs[idx === 0 ? 1 : 0].innerText = otherValue;
-            document.getElementById('egg-status').innerText = "Շնորհավոր! Ստացար " + winValue;
-            document.getElementById('close-egg').style.display = 'block';
-        }
-
-        function closeEggGame() {
-            document.getElementById('egg-overlay').style.display = 'none';
-            document.querySelectorAll('.egg').forEach(e => { e.classList.remove('open'); e.innerText = "?"; });
-            wheelWrapper.classList.add('idle-spin');
-        }
 
         function startTimer() {
             let total = (parseInt(document.getElementById('min').value)||0)*60 + (parseInt(document.getElementById('sec').value)||0);
@@ -492,6 +434,7 @@
             }, 1000);
         }
         function resetTimer() { location.reload(); }
+        
         updateList();
     </script>
 </body>
